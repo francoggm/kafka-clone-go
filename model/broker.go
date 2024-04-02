@@ -4,6 +4,6 @@ import "net"
 
 type BrokerConnection struct {
 	Conn  net.Conn
-	Mode  int8
+	Mode  int
 	Topic string
 }

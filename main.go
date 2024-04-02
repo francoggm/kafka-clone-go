@@ -3,8 +3,8 @@ package main
 import (
 	"kafka-clone/broker"
 	"kafka-clone/model"
+	"kafka-clone/server"
 	"log"
-	"net"
 )
 
 func main() {
@@ -14,25 +14,9 @@ func main() {
 	ch := make(chan *model.BrokerConnection)
 
 	broker := broker.NewBroker()
-	broker.Run(ch)
+	go broker.Run(ch)
 
-	listener, err := net.Listen("tcp", host+":"+port)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer listener.Close()
-
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-
-		ch <- &model.BrokerConnection{
-			Conn:  conn,
-			Mode:  0,
-			Topic: "",
-		}
+	if err := server.Run(host, port, ch); err != nil {
+		log.Panic(err)
 	}
 }

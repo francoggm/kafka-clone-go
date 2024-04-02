@@ -1,12 +1,14 @@
 package broker
 
 import (
+	"bufio"
 	"net"
 )
 
 type producer struct {
-	conn  net.Conn
-	topic *topic
+	connected bool
+	conn      net.Conn
+	topic     *topic
 }
 
 func newProducer(conn net.Conn, topic *topic) *producer {
@@ -16,7 +18,23 @@ func newProducer(conn net.Conn, topic *topic) *producer {
 	}
 }
 
-func (p *producer) produceMessage(key string, value string) {
-	msg := newMessage(key, value)
+func (p *producer) createMessage(value string) {
+	msg := newMessage(value)
 	p.topic.addMessage(msg)
+}
+
+func (p *producer) produceMessages() {
+	reader := bufio.NewReader(p.conn)
+
+	for {
+		message, err := reader.ReadString('\n')
+		if err != nil {
+			p.conn.Close()
+			p.connected = false
+
+			return
+		}
+
+		p.createMessage(message)
+	}
 }

@@ -32,9 +32,13 @@ func (b *Broker) Run(ch chan *model.BrokerConnection) {
 		case 0:
 			pr := newProducer(client.Conn, topic)
 			b.producers = append(b.producers, pr)
+
+			go pr.produceMessages()
 		case 1:
 			cs := newConsumer(client.Conn, topic)
 			b.consumers = append(b.consumers, cs)
+
+			go cs.consumeMessages()
 		}
 	}
 }
